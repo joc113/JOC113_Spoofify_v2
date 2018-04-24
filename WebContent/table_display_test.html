@@ -83,19 +83,326 @@ body{
 var searchTerm = null;
 $(document).ready(function(){
 	//var element = $('#tblData');
+	show();
 	
-	//Here I can set it so that when the user clicks the radio button, the display table changes
+	//I decided to get rid of the Search button because Spotify doesn't use one. Autocomplete should do the trick
 	/*
-	$("#radSongs").click(function(){
-		document.getElementById("defaultView").style.display="none";
-		
-	});
-	*/
 	$("#btnSearch").click(function(){
 		var searchTerm = $("#txtSearch").val();
-		//Need to find a way to use different search functions based on which radio button is selected
+		//Can put this command up where the radio button click functions will go
+		//Can stay here for now though. 
+		document.getElementById("defaultView").style.display="none";
+	});
+	*/
+	
+});
+
+//These are the search functions that define which Java servlet to use
+//Based on what is being searched for (defined by radio buttons)
+function searchAll(searchTerm){
+	//Uses this servlet, passes the searchTerm from the DOM
+	var searchUrl = "api/get_all?searchTerm=" + searchTerm;
+	//Display in console what url is being passed
+	console.log(searchUrl);
+	//Pass this searchTerm into the function that will put the data in the right table
+	$.get(searchUrl, function(data){
+		console.log(data);
+		allSearchResults(data);
+	});
+}
+//Repeat for each type of servlet
+function searchSongs(searchTerm){
+	var searchUrl = "api/get_songs?searchTerm=" + searchTerm;
+	console.log(searchUrl);
+	$.get(searchUrl, function(data){
+		console.log(data);
+		songSearchResults(data);
+	});
+}
+
+function searchArtists(searchTerm){
+	var searchUrl = "api/get_artists?searchTerm=" + searchTerm;
+	console.log(searchUrl);
+	$.get(searchUrl, function(data){
+		console.log(data);
+		artistSearchResults(data);
+	});
+}
+
+function searchAlbums(searchTerm){
+	var searchUrl = "api/get_albums?searchTerm=" + searchTerm;
+	console.log(searchUrl);
+	$.get(searchUrl, function(data){
+		console.log(data);
+		albumSearchResults(data);
+	});
+}
+
+//Each of these defines which table will be populated,
+//Then applies Knockout.js bindings to the necessary table
+function allSearchResults(data){
+	//Displays data in console
+	console.log(data.results);
+	var tbldata = $("#tblDataAll").find("tbody")[0];
+	//Clean out bindings before each search to avoid multiple bindings Knockout.js error
+	ko.cleanNode(tblDataAll); 
+	ko.applyBindings(data, tbldata);
+}
+//Do the same for each based on what we're searching for
+function songSearchResults(data){
+	console.log(data.songs);
+	var tbldata = $("#tblDataSongs").find("tbody")[0];
+	ko.cleanNode(tblDataSongs); 
+	ko.applyBindings(data, tbldata);
+}
+function artistSearchResults(data){
+	console.log(data.artists);
+	var tbldata = $("#tblDataArtists").find("tbody")[0];
+	ko.cleanNode(tblDataArtists); 
+	ko.applyBindings(data, tbldata);
+}
+function albumSearchResults(data){
+	console.log(data.albums);
+	var tbldata = $("#tblDataAlbums").find("tbody")[0];
+	ko.cleanNode(tblDataAlbums); 
+	ko.applyBindings(data, tbldata);
+}
+//Show/hide function. Radio buttons will define which one of these are called
+//It just shows the table with the active tblData and then hides the rest
+function show(x=0){
+	if (x==0){
+		//This method of showing and hiding tables found on YouTube
+		//Author: Haritha Computers & Technology
+		//https://www.youtube.com/watch?v=zndWZv9DZWc
+		//Also using this method as an event handler for when the radio buttons are clicked
+		
+		$("#txtSearch").keyup(function(){
+		var searchTerm = $("#txtSearch").val();
+		if(searchTerm.length == 3 || searchTerm.length == 7 || searchTerm.length == 12){
+			console.log(searchTerm);
+			document.getElementById("defaultView").style.display="none";
+			$("#allMusic").html(
+	   				"<div>" + 
+	   					"<table id='tblDataAll' border='1' cellspacing='0' cellpadding='4'>" +
+	   						"<thead>" + 
+	   							"<tr>" +
+	   			        			"<th>Title</th><th>Length</th><th>Artist</th><th>Album</th><th>Release Date</th><th>Play</th>" +
+	   			    			"</tr>"	+
+	   	    				"</thead>"+
+	   	    				"<tbody data-bind='foreach: results'>"+
+	   			    			"<tr>"+
+	   			        			"<td data-bind='text: song_title'></td>"+
+	   			        			"<td data-bind='text: length'></td>"+
+	   								"<td data-bind='text: artist'></td>"+
+	   								"<td data-bind='text: album'></td>"+
+	   								"<td data-bind='text: release_date'></td>"+
+	   								"<td><audio controls><source src='songs/Oxygen_by_Josh_Chamberlain_and_Luke_Leonard.mp3' type='audio/mpeg'></audio></td>"+
+	   			    			"</tr> "+
+	   	    				"</tbody>" +
+	   					"</table>"+
+	   				"</div>");
+	   		searchAll(searchTerm);
+			document.getElementById("justSongs").style.display="none";
+			document.getElementById("justArtists").style.display="none";
+			document.getElementById("justAlbums").style.display="none";
+			document.getElementById("allMusic").style.display="block";
+		}
+	});
+
 		
 		
+	}
+	else if (x==1){
+		//Sets all of the non-active tables to be invisible
+
+		$("#txtSearch").keyup(function(){
+			var searchTerm = $("#txtSearch").val();
+			if(searchTerm.length == 3 || searchTerm.length == 7 || searchTerm.length == 12){
+				console.log(searchTerm);
+				document.getElementById("defaultView").style.display="none";
+	   			$("#justSongs").html(
+	   	   				"<div>" +
+	   	   					"<table id='tblDataSongs' border='1' cellspacing='0' cellpadding='4'>" +
+	   	   						"<thead>" +
+	   	   							"<tr>" +
+	   	   						        "<th>Title</th><th>Length</th><th>Artist</th><th>Album</th><th>Release Date</th><th>Play</th>" +
+	   	   						    "</tr>"+		
+	   	   			    		"</thead>"+
+	   	   			    		"<tbody data-bind='foreach: songs'>"+
+	   	   						    "<tr>" +
+	   	   						        "<td data-bind='text: song_title'></td>"+
+	   	   						        "<td data-bind='text: length'></td>"+
+	   	   								"<td data-bind='text: artist'></td>"+
+	   	   								"<td data-bind='text: album'></td>"+
+	   	   								"<td data-bind='text: release_date'></td>" +
+	   	   								"<td><audio controls><source src='songs/Oxygen_by_Josh_Chamberlain_and_Luke_Leonard.mp3' type='audio/mpeg'></audio></td>"+
+	   	   						    "</tr> "+
+	   	   			    		"</tbody>"+
+	   	   					"</table>"+
+	   	   				"</div>");
+	   	   			searchSongs(searchTerm);
+	   	 		document.getElementById("allMusic").style.display="none";
+	   			document.getElementById("justArtists").style.display="none";
+	   			document.getElementById("justAlbums").style.display="none";
+	   			//Sets the active table to be visible
+	   			document.getElementById("justSongs").style.display="block";
+			}
+		});
+		
+	}
+	else if (x==2){
+		
+		$("#txtSearch").keyup(function(){
+			var searchTerm = $("#txtSearch").val();
+			if(searchTerm.length == 3 || searchTerm.length == 7 || searchTerm.length == 12){
+				console.log(searchTerm);
+				document.getElementById("defaultView").style.display="none";
+	   			$("#justArtists").html(
+	   	   				"<div>" +
+	   	   					"<table id='tblDataArtists' border='1' cellspacing='0' cellpadding='4'>" +
+	   	   					"<thead>" +
+	   	   						"<tr>" +
+	   	   					        "<th>Band</th><th>First Name</th><th>Last Name</th><th>Bio</th>" +
+	   	   					    "</tr>" +	
+	   	   				   	"</thead>" +
+	   	   				 	  	"<tbody data-bind='foreach: artists'>" +
+	   	   						    "<tr>" +
+	   	   						        "<td data-bind='text: band_name'></td>" +
+	   	   						        "<td data-bind='text: first_name'></td>" +
+	   	   						        "<td data-bind='text: last_name'></td>" +
+	   	   						        "<td data-bind='text: bio'></td>" + 
+	   	   						    "</tr>" + 
+	   	   				   		"</tbody>" +
+	   	   					"</table>" +		
+	   	   				"</div>");
+	   	   			searchArtists(searchTerm);
+	   	   		document.getElementById("allMusic").style.display="none";
+	   			document.getElementById("justSongs").style.display="none";
+	   			document.getElementById("justAlbums").style.display="none";
+	   			document.getElementById("justArtists").style.display="block";
+			}
+		});
+	}
+	else if (x==3){
+
+		$("#txtSearch").keyup(function(){
+			var searchTerm = $("#txtSearch").val();
+			if(searchTerm.length == 3 || searchTerm.length == 7 || searchTerm.length == 12){
+				console.log(searchTerm);
+				document.getElementById("defaultView").style.display="none";
+	   			$("#justAlbums").html(
+	   	   				"<div>" +
+	   	   					"<table id='tblDataAlbums' border='1' cellspacing='0' cellpadding='4'>" +
+	   	   						"<thead>" +
+	   	   							"<tr>" +
+	   	   				        		"<th>Album Title</th><th>Tracks</th><th>Release Date</th><th>Recording Company</th><th>PMRC</th><th>Album Length (Hours)</th>" +
+	   	   				    		"</tr>" +	
+	   	   			   			"</thead>" +
+	   	   			   			"<tbody data-bind='foreach: albums'>" +
+	   	   				    		"<tr>" +
+	   	   				        		"<td data-bind='text: title'></td>" +
+	   	   				        		"<td data-bind='text: release_date'></td>" +
+	   	   				        		"<td data-bind='text: recording_company_name'></td>" +
+	   	   				        		"<td data-bind='text: number_of_tracks'></td>" +
+	   	   				        		"<td data-bind='text: PMRC_rating'></td>" +
+	   	   				        		"<td data-bind='text: length'></td>" +
+	   	   				    		"</tr> " +
+	   	   			   			"</tbody>" +
+	   	   					"</table>" +
+	   	   				"</div>");
+	   	   			searchAlbums(searchTerm);
+	   	 		document.getElementById("allMusic").style.display="none";
+	   			document.getElementById("justSongs").style.display="none";
+	   			document.getElementById("justArtists").style.display="none";
+	   			document.getElementById("justAlbums").style.display="block";
+			}
+		});
+	}
+}
+
+//Set lists received from the servlets
+function resultList(){
+	self = this;
+}
+
+function songList(){
+	self = this;
+}
+
+function albumList(){
+	self = this;
+}
+
+function artistList(){
+	self = this;
+}
+
+</script>
+</head>
+<!-- Start HTML -->
+<body>
+<div id="container">
+<!-- Main body of HTML -->
+<div class = "main">
+	<!-- Define search bar and button -->
+	<div class = "search">
+		<br />
+		<input type="text" id="txtSearch" placeholder="Search..."/>
+		<br />
+		<input type="button" id="btnSearch" value="Search" />
+		</div>
+<br /><br />
+<!-- This is the section that will be shown when the All Music radio button is selected -->
+<div id = "defaultView">
+	<table id="tblDefault" border="1" cellspacing="0" cellpadding="4">
+		<thead>
+			<tr>
+				<th>Title</th><th>Length</th><th>Artist</th><th>Album</th><th>Release Date</th><th>Play</th>
+		    </tr>		
+    	</thead>
+	</table>
+</div>
+<!-- Placeholder div for tblDataAll to be displayed -->
+<div id ="allMusic" style="overflow-y:auto;">
+</div>
+<!-- Placeholder div for tblDataSongs to be displayed -->
+<div id ="justSongs">
+</div>
+<!-- Placeholder div for tblDataArtists to be displayed -->
+<!-- Just a note: what if I added how many albums an artist has written by using a subquery? That would be pretty neat.
+		Only do that if there's extra time at the end -->
+<div id ="justArtists">
+</div>
+<!-- Placeholder div for tblDataAlbums to be displayed -->
+<div id ="justAlbums">
+</div>
+
+</div>
+<!-- Sidebar area. Mainly used as a nav and a place to put the logo -->
+<div class= "sidebar">
+	<div class="logo">
+		<!-- Custom logo -->
+		<img src = "spoofify_logo.png" alt = "logo" width = "100%"/>
+		<br/>
+	</div>
+	<!-- These radio buttons will pass values to the tblShow function, defining which table will be shown, 
+	which ones will be hidden, and which servlet will be used to search -->
+	<input type="radio" id="radAll" name = "radSearchBy" onclick="show(0)" checked> All Music<br>
+	<input type="radio" id="radSongs" name = "radSearchBy" onclick="show(1)"> Songs<br>
+    <input type="radio" id="radArtists" name = "radSearchBy" onclick="show(2)"> Artists<br>
+    <input type="radio" id="radAlbums" name = "radSearchBy" onclick="show(3)"> Albums
+</div>
+</div>
+</body>
+
+</html>
+
+<!-- Code used to add audio file
+<audio controls>
+<source src="songs/Oxygen_by_Josh_Chamberlain_and_Luke_Leonard.mp3" type="audio/mpeg">
+</audio> -->
+
+<!-- 
    		if($('#radAll').is(':checked')) {
    			$("#allMusic").html(
    				"<div>" + 
@@ -120,7 +427,9 @@ $(document).ready(function(){
    				"</div>");
    				searchAll(searchTerm);
    		}
-   		else if ($('#radSongs').is(':checked')) {
+ -->
+ <!-- 
+ else if ($('#radSongs').is(':checked')) {
    			$("#justSongs").html(
    				"<div>" +
    					"<table id='tblDataSongs' border='1' cellspacing='0' cellpadding='4'>" +
@@ -143,7 +452,9 @@ $(document).ready(function(){
    				"</div>");
    			searchSongs(searchTerm);
    		}
-   		else if ($('#radArtists').is(':checked')) {
+  -->
+  <!-- 
+  else if ($('#radArtists').is(':checked')) {
    			$("#justArtists").html(
    				"<div>" +
    					"<table id='tblDataArtists' border='1' cellspacing='0' cellpadding='4'>" +
@@ -164,7 +475,9 @@ $(document).ready(function(){
    				"</div>");
    			searchArtists(searchTerm);
    		}
-   		else if ($('#radAlbums').is(':checked')) {
+   -->
+   <!-- 
+      		else if ($('#radAlbums').is(':checked')) {
    			$("#justAlbums").html(
    				"<div>" +
    					"<table id='tblDataAlbums' border='1' cellspacing='0' cellpadding='4'>" +
@@ -187,286 +500,4 @@ $(document).ready(function(){
    				"</div>");
    			searchAlbums(searchTerm);
    		}
-	});
-	/*
-	$("#txtSearch").keyup(function(){
-		var searchTerm = $("#txtSearch").val();
-		if(searchTerm.length > 3){
-			console.log(searchTerm);
-			search(searchTerm);
-		}
-	});    
-	*/
-	
-	
-	$("#btnClear").click(function(){
-	//Clear table and #txtSearch to let the user make a new search
-	//Must empty the data in the table, but not the whole table itself
-		var tbl = $("#tbody");
-		tbl.empty();
-	
-	});
-});
-
-function searchAll(searchTerm){
-	//ko.cleanNode(data);
-	var searchUrl = "api/get_all?searchTerm=" + searchTerm;
-	console.log(searchUrl);
-	$.get(searchUrl, function(data){
-		console.log(data);
-		allSearchResults(data);
-	});
-}
-
-function searchSongs(searchTerm){
-	//ko.cleanNode(data);
-	var searchUrl = "api/get_songs?searchTerm=" + searchTerm;
-	console.log(searchUrl);
-	$.get(searchUrl, function(data){
-		console.log(data);
-		songSearchResults(data);
-	});
-}
-
-function searchArtists(searchTerm){
-	//ko.cleanNode(data);
-	var searchUrl = "api/get_artists?searchTerm=" + searchTerm;
-	console.log(searchUrl);
-	$.get(searchUrl, function(data){
-		console.log(data);
-		artistSearchResults(data);
-	});
-}
-
-function searchAlbums(searchTerm){
-	//ko.cleanNode(data);
-	var searchUrl = "api/get_albums?searchTerm=" + searchTerm;
-	console.log(searchUrl);
-	$.get(searchUrl, function(data){
-		console.log(data);
-		albumSearchResults(data);
-	});
-}
-	
-function allSearchResults(data){
-	
-	console.log(data.results);
-	var tbldata = $("#tblDataAll").find("tbody")[0];
-	ko.cleanNode(tblDataAll); 
-	ko.applyBindings(data, tbldata);
-}
-
-function songSearchResults(data){
-	
-	console.log(data.songs);
-	var tbldata = $("#tblDataSongs").find("tbody")[0];
-	ko.cleanNode(tblDataSongs); 
-	ko.applyBindings(data, tbldata);
-}
-function artistSearchResults(data){
-	
-	console.log(data.artists);
-	var tbldata = $("#tblDataArtists").find("tbody")[0];
-	ko.cleanNode(tblDataArtists); 
-	ko.applyBindings(data, tbldata);
-}
-function albumSearchResults(data){
-	
-	console.log(data.albums);
-	var tbldata = $("#tblDataAlbums").find("tbody")[0];
-	ko.cleanNode(tblDataAlbums); 
-	ko.applyBindings(data, tbldata);
-}
-//Show/hide function
-function show(x){
-	if (x==0){
-		//https://www.youtube.com/watch?v=zndWZv9DZWc
-		document.getElementById("justSongs").style.display="none";
-		document.getElementById("justArtists").style.display="none";
-		document.getElementById("justAlbums").style.display="none";
-		document.getElementById("allMusic").style.display="block";
-	}
-	else if (x==1){
-		document.getElementById("allMusic").style.display="none";
-		document.getElementById("justArtists").style.display="none";
-		document.getElementById("justAlbums").style.display="none";
-		document.getElementById("justSongs").style.display="block";
-	}
-	else if (x==2){
-		document.getElementById("allMusic").style.display="none";
-		document.getElementById("justSongs").style.display="none";
-		document.getElementById("justAlbums").style.display="none";
-		document.getElementById("justArtists").style.display="block";
-	}
-	else if (x==3){
-		document.getElementById("allMusic").style.display="none";
-		document.getElementById("justSongs").style.display="none";
-		document.getElementById("justArtists").style.display="none";
-		document.getElementById("justAlbums").style.display="block";
-	}
-}
-
-function resultList(){
-	self = this;
-}
-
-function songList(){
-	self = this;
-}
-
-function albumList(){
-	self = this;
-}
-
-function artistList(){
-	self = this;
-}
-
-</script>
-</head>
-
-<body>
-<div id="container">
-
-<div class = "main">
-
-	<div class = "search">
-		<br />
-		<input type="text" id="txtSearch" placeholder="Search..."/>
-		<br />
-		<input type="button" id="btnSearch" value="Search" />
-		<input type="button" id="btnClear" value="Clear Search" />
-		</div>
-<br /><br />
-<!-- This is the section that will be shown when the All Music radio button is selected -->
-<div id = "defaultView">
-	<table id="tblDefault" border="1" cellspacing="0" cellpadding="4">
-		<thead>
-			<tr>
-				<th>Title</th><th>Length</th><th>Artist</th><th>Album</th><th>Release Date</th><th>Play</th>
-		    </tr>		
-    	</thead>
-	</table>
-</div>
-<div id ="allMusic" style="overflow-y:auto;">
-<!-- 
-	<table id="tblDataAll" border="1" cellspacing="0" cellpadding="4">
-		<thead>
-			<tr>
-		        <th>Title</th><th>Length</th><th>Artist</th><th>Album</th><th>Release Date</th><th>Play</th>
-		    </tr>		
-    	</thead>
-    	<tbody data-bind="foreach: results">
-		    <tr>
-		        <td data-bind="text: song_title"></td>
-		        <td data-bind="text: length"></td>
-				<td data-bind="text: artist"></td>
-				<td data-bind="text: album"></td>
-				<td data-bind="text: release_date"></td>
-		    </tr> 
-    	</tbody>
-	</table>
-	-->
-</div>
-<!-- This is the table that will be shown when the Songs radio button is selected -->
-<div id ="justSongs">
-<!-- 
-<table id="tblDataSongs" border="1" cellspacing="0" cellpadding="4">
-	<thead>
-		<tr>
-	        <th>Title</th><th>Length</th><th>Artist</th><th>Album</th><th>Release Date</th><th>Play</th>
-	    </tr>		
-    </thead>
-    <tbody data-bind="foreach: songs">
-	    <tr>
-	        <td data-bind="text: song_title"></td>
-	        <td data-bind="text: length"></td>
-			<td data-bind="text: artist"></td>
-			<td data-bind="text: album"></td>
-			<td data-bind="text: release_date"></td>
-	    </tr> 
-    </tbody>
-</table>
--->
-<!-- Just a note: what if I added how many albums an artist has written by using a subquery? That would be pretty neat.
-		Only do that if there's extra time at the end -->
-</div>
-<div id ="justArtists">
-<!-- 
-<table id="tblDataArtists" border="1" cellspacing="0" cellpadding="4">
-	<thead>
-		<tr>
-	        <th>Band</th><th>First Name</th><th>Last Name</th><th>Bio</th>
-	    </tr>		
-   	</thead>
-   	<tbody data-bind="foreach: results">
-	    <tr>
-	        <td data-bind="text: band_name"></td>
-	        <td data-bind="text: first_name"></td>
-	        <td data-bind="text: last_name"></td>
-	        <td data-bind="text: bio"></td>
-	    </tr> 
-   	</tbody>
-</table>
-	-->
-</div>
-<div id ="justAlbums">
-<!-- 
-<table id="tblDataAlbums" border="1" cellspacing="0" cellpadding="4">
-	<thead>
-		<tr>
-	        <th>Album Title</th><th>Tracks</th><th>Release Date</th><th>Recording Company</th><th>PMRC</th><th>Album Length (Hours)</th>
-	    </tr>		
-   	</thead>
-   	<tbody data-bind="foreach: albums">
-	    <tr>
-	        <td data-bind="text: title"></td>
-	        <td data-bind="text: number_of_tracks"></td>
-	        <td data-bind="text: release_date"></td>
-	        <td data-bind="text: recording_company_name"></td>
-	        <td data-bind="text: PMRC_rating"></td>
-	        <td data-bind="text: length"></td>
-	    </tr> 
-   	</tbody>
-</table>
--->
-
-</div>
-
-</div>
-<div class= "sidebar">
-	<div class="logo">
-		<img src = "spoofify_logo.png" alt = "logo" width = "100%"/>
-		<br/>
-	</div>
-	<!-- These radio buttons will pass values to the tblShow function, defining which table will be shown, and which servlet will be used -->
-	<input type="radio" id="radAll" name = "radSearchBy" onclick="show(0)" checked> All Music<br>
-	<input type="radio" id="radSongs" name = "radSearchBy" onclick="show(1)"> Songs<br>
-    <input type="radio" id="radArtists" name = "radSearchBy" onclick="show(2)"> Artists<br>
-    <input type="radio" id="radAlbums" name = "radSearchBy" onclick="show(3)"> Albums
-</div>
-</div>
-</body>
-
-</html>
-
-
-
-<!--  Here's a working select function that I can incorporate once I get this working
-function show(x){
-	if (x==0){
-		//https://www.youtube.com/watch?v=zndWZv9DZWc
-		document.getElementById("justSongs").style.display="none";
-		document.getElementById("allMusic").style.display="block";
-	}
-	else if (x==1){
-		document.getElementById("allMusic").style.display="none";
-		document.getElementById("justSongs").style.display="block";
-	}
-}
--->
-
-<!-- Code used to add audio file
-<audio controls>
-<source src="songs/Oxygen_by_Josh_Chamberlain_and_Luke_Leonard.mp3" type="audio/mpeg">
-</audio> -->
+    -->
