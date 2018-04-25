@@ -19,6 +19,8 @@ import edu.pitt.spoofify.utils.DbUtilities;
 
 /**
  * Servlet implementation class get_songs
+ * Class searches database using sql query to process user searches
+ * Accepts searchTerm from Javascript and uses as param for MySQL query
  */
 @WebServlet("/api/get_albums")
 public class get_albums extends HttpServlet {
@@ -34,30 +36,36 @@ public class get_albums extends HttpServlet {
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * @param searchTerm is what's received from Javascript
+	 * @param sql is the MySQL query
+	 * @param searchResults JSONObject to pass back search results
+	 * @RESULTS_LIMIT limit the results
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		//Return data in JSON format
 		response.setContentType("application/json");
-		String searchTerm;
-		String sql = "";
-		JSONObject searchResults = new JSONObject();
-		final int RESULTS_LIMIT = 50;
+		String searchTerm;								//Holds search term
+		String sql = "";								//Holds query
+		JSONObject searchResults = new JSONObject();	//JSONObject to return results
+		final int RESULTS_LIMIT = 50;					
 		
 		HttpSession session = request.getSession(true);
 		session.setAttribute("SEARCH_RESULTS", ""); // Let's assume this contains our data
 		
+		//Handle empty searches
 		if(request.getParameter("searchTerm") != null){
 			searchTerm = request.getParameter("searchTerm");
 			if(!searchTerm.equals("")){
 				
 				try {
 					
-					//We could add a GROUP BY clause in this query to make sure we don't get a bunch with the same name
-					//Or we just continue to use the primary key
+					//query searches database for user desired data
 					sql = "SELECT DISTINCT * FROM album WHERE title LIKE '%" + searchTerm + "%' LIMIT " + RESULTS_LIMIT + ";";
 					JSONArray albumList = new JSONArray();
 					DbUtilities db = new DbUtilities();
 					ResultSet rs = db.getResultSet(sql);
 					while(rs.next()){
+						//Put all data into a JSONObject
 						JSONObject album = new JSONObject();
 						album.put("album_id", rs.getString("album_id"));
 						album.put("title", rs.getString("title"));
@@ -67,12 +75,13 @@ public class get_albums extends HttpServlet {
 						album.put("number_of_tracks", rs.getInt("number_of_tracks"));
 						album.put("PMRC_rating", rs.getString("PMRC_rating"));
 						album.put("length", rs.getDouble("length"));
-						
+						//Put everything in list
 						albumList.put(album);
 					}
 
 					// Store album list in searchResults JSON object
 					searchResults.put("albums", albumList);
+					//Return results
 					response.getWriter().write(searchResults.toString());
 
 				} catch (SQLException e) {

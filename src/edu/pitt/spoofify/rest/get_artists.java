@@ -19,6 +19,8 @@ import edu.pitt.spoofify.utils.DbUtilities;
 
 /**
  * Servlet implementation class get_songs
+ * Class searches database using sql join query to process user searches
+ * Accepts searchTerm from Javascript and uses as param for MySQL query
  */
 @WebServlet("/api/get_artists")
 public class get_artists extends HttpServlet {
@@ -34,8 +36,13 @@ public class get_artists extends HttpServlet {
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * @param searchTerm is what's received from Javascript
+	 * @param sql is the MySQL query
+	 * @param searchResults JSONObject to pass back search results
+	 * @RESULTS_LIMIT limit the results
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		//return data in JSON format
 		response.setContentType("application/json");
 		String searchTerm;
 		String sql = "";
@@ -61,7 +68,8 @@ public class get_artists extends HttpServlet {
 							+ "LIMIT " + RESULTS_LIMIT + ";";
 					
 					JSONArray artistList = new JSONArray();
-
+					
+					//Take everything from MySQL query and add it to the Artist Object
 					DbUtilities db = new DbUtilities();
 					ResultSet rs = db.getResultSet(sql);
 					while(rs.next()){
@@ -72,10 +80,11 @@ public class get_artists extends HttpServlet {
 						artist.put("last_name", rs.getString("last_name"));
 						artist.put("bio", rs.getString("bio"));
 						
+						//Add the array to the Object
 						artistList.put(artist);
 					}
 
-					// Store album list in searchResults JSON object
+					// Store artist list in searchResults JSON object
 					searchResults.put("artists", artistList);
 					
 					response.getWriter().write(searchResults.toString());

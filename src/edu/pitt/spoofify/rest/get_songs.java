@@ -19,6 +19,8 @@ import edu.pitt.spoofify.utils.DbUtilities;
 
 /**
  * Servlet implementation class get_songs
+ * Class searches database using sql join query to process user searches
+ * Accepts searchTerm from Javascript and uses as param for MySQL query
  */
 @WebServlet("/api/get_songs")
 public class get_songs extends HttpServlet {
@@ -34,9 +36,15 @@ public class get_songs extends HttpServlet {
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * @param searchTerm is what's received from Javascript
+	 * @param sql is the MySQL query
+	 * @param searchResults JSONObject to pass back search results
+	 * @RESULTS_LIMIT limit the results
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		//return data in JSON format
 		response.setContentType("application/json");
+		//Hold search term, MySQL query, the JSONObject with what's returned from database, and limit for results
 		String searchTerm;
 		String sqlSongs = "";
 		JSONObject searchResults = new JSONObject();
@@ -45,17 +53,20 @@ public class get_songs extends HttpServlet {
 		HttpSession session = request.getSession(true);
 		session.setAttribute("SEARCH_RESULTS", ""); // Let's assume this contains our data
 		
+		//Handle empty searches
 		if(request.getParameter("searchTerm") != null){
 			searchTerm = request.getParameter("searchTerm");
 			if(!searchTerm.equals("")){
 				
 				try {
+					//MySQL query
 					sqlSongs =  "SELECT song_id, s.title AS 'song_title', s.length, s.release_date, s.file_path, IFNULL(a.title, '') AS 'album', " + 
 								"IFNULL(CONCAT(ar.band_name, ar.first_name, ' ', ar.last_name), '') AS 'artist' " + 
 								"FROM song s LEFT JOIN album_song als ON s.song_id = als.fk_song_id LEFT JOIN album a ON als.fk_album_id = a.album_id " + 
 								"LEFT JOIN song_artist sa ON s.song_id = sa.fk_song_id LEFT JOIN artist ar ON sa.fk_artist_id = ar.artist_id " + 
 								"WHERE s.title LIKE + '%" + searchTerm + "%' LIMIT " + RESULTS_LIMIT + ";";
 					
+					//Holds list of results
 					JSONArray songList = new JSONArray();
 					
 					//This is only here to account for the weird Knockout shit and so it doesn't say that this is undefined
@@ -63,6 +74,7 @@ public class get_songs extends HttpServlet {
 					DbUtilities db = new DbUtilities();
 					ResultSet rs = db.getResultSet(sqlSongs);
 					while(rs.next()){
+						//Put resutls into JSONObject
 						JSONObject song = new JSONObject();
 						song.put("song_id", rs.getString("song_id"));
 						song.put("song_title", rs.getString("song_title"));

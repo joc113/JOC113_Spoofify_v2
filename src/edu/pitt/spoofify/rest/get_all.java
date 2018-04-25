@@ -20,6 +20,8 @@ import edu.pitt.spoofify.utils.DbUtilities;
 
 /**
  * Servlet implementation class get_all
+ * Class searches database using sql join query to process user searches
+ * Accepts searchTerm from Javascript and uses as param for MySQL query
  */
 @WebServlet("/api/get_all")
 public class get_all extends HttpServlet {
@@ -35,21 +37,28 @@ public class get_all extends HttpServlet {
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * @param searchTerm is what's received from Javascript
+	 * @param sql is the MySQL query
+	 * @param searchResults JSONObject to pass back search results
+	 * @RESULTS_LIMIT limit the results
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		//Return data in JSON format
 		response.setContentType("application/json");
-		String searchTerm;
-		String sql = "";
-		JSONObject searchResults = new JSONObject();
-		final int RESULTS_LIMIT = 50;
+		String searchTerm;								//Holds searchTerm
+		String sql = "";								//Holds MySQL query
+		JSONObject searchResults = new JSONObject();	//JSONObject to return results to be passed to user
+		final int RESULTS_LIMIT = 50;					//Limit amount of results user can get. I think 50 is fine
 		
-		HttpSession session = request.getSession(true);
-		session.setAttribute("SEARCH_RESULTS", "");
+		HttpSession session = request.getSession(true); 
+		session.setAttribute("SEARCH_RESULTS", "");		
 		
+		//Handle empty searches
 		if(request.getParameter("searchTerm") != null) {
 			searchTerm = request.getParameter("searchTerm");
 			if(!searchTerm.equals("")) {
 				try {
+					//MySQL query uses Left Join to handle songs without artists or albums
 					sql =   "SELECT song_id, s.title AS 'song_title', s.length, s.release_date, IFNULL(a.title, '') AS 'album', a.number_of_tracks AS 'tracks', " +
 							"IFNULL(CONCAT(ar.band_name, ar.first_name, ' ', ar.last_name), '') AS 'artist' " +
 							"FROM song s LEFT JOIN album_song als ON s.song_id = als.fk_song_id LEFT JOIN album a ON als.fk_album_id = a.album_id " +
@@ -60,11 +69,14 @@ public class get_all extends HttpServlet {
 					
 							//"SELECT * FROM song WHERE title LIKE '%" + searchTerm + "%';";
 					
+					//Hold JSONObjects
 					JSONArray resultList = new JSONArray();
 					
+					//Go through query and put returned values into JSONObject
 					DbUtilities db = new DbUtilities();
 					ResultSet rs = db.getResultSet(sql);
 					while(rs.next()) {
+						//index with title of column
 						JSONObject result = new JSONObject();
 						result.put("song_id", rs.getString("song_id"));
 						result.put("song_title", rs.getString("song_title"));
@@ -75,10 +87,10 @@ public class get_all extends HttpServlet {
 						result.put("artist", rs.getString("artist"));
 						
 						resultList.put(result);
-						
 					}
-					
+					//Put into searchResults
 					searchResults.put("results", resultList);
+					//Pass String back
 					response.getWriter().write(searchResults.toString());
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
@@ -101,19 +113,3 @@ public class get_all extends HttpServlet {
 	}
 
 }
-
-/* This was the query given in class
- * It only works for searches that have attributes from each table because it uses INNER JOIN
- * I'm using LEFT JOIN so it can also display results that may only have results in one table
-"SELECT song_id, s.title AS 'song_title', s.length AS 'length', " +
-"s.release_date 'release_date', a.title AS 'album', a.number_of_tracks AS 'tracks', " +
-"CONCAT(ar.band_name, ar.first_name, ' ', ar.last_name) AS 'artist' " +
-"FROM song s JOIN album_song als ON s.song_id = als.fk_song_id JOIN album a ON als.fk_album_id = a.album_id " +
-"INNER JOIN song_artist sa ON s.song_id = sa.fk_song_id " +
-"INNER JOIN artist ar ON sa.fk_artist_id = ar.artist_id " +
-"WHERE s.title LIKE '%" + searchTerm + "%' OR a.title LIKE '%" + searchTerm + "%' " +
-"OR ar.band_name LIKE '% " + searchTerm + "%' OR ar.first_name LIKE '%" + searchTerm + "%' " +
-"OR ar.last_name LIKE '%" + searchTerm + "%' LIMIT " + RESULTS_LIMIT + ";";
-*/
-
-//"SELECT * FROM song WHERE title LIKE '%" + searchTerm + "%';";
