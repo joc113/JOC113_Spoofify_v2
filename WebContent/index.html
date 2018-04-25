@@ -85,7 +85,6 @@ $(document).ready(function(){
 	}
 	*/
 	show(0);
-
 });
 //These are the search functions that define which Java servlet to use
 //Based on what is being searched for (defined by radio buttons)
@@ -154,6 +153,8 @@ function albumSearchResults(data){
 	ko.cleanNode(tblDataAlbums); 
 	ko.applyBindings(data, tbldata);
 }
+
+
 //Show/hide function. Radio buttons will define which one of these are called
 //It just shows the table with the active tblData and then hides the rest
 function show(x){
@@ -190,7 +191,12 @@ function show(x){
 	   	    						"</tbody>" +
 	   							"</table>"+
 	   						"</div>");
+					if(x==0){
 	   				searchAll(searchTerm);
+					}
+					else{
+						//do nothing
+					}
 			document.getElementById("justSongs").style.display="none";
 			document.getElementById("justArtists").style.display="none";
 			document.getElementById("justAlbums").style.display="none";
@@ -225,7 +231,12 @@ function show(x){
 	   	   			    		"</tbody>"+
 	   	   					"</table>"+
 	   	   				"</div>");
+	   			if(x==1){
 	   	   		searchSongs(searchTerm);
+	   			}
+	   			else{
+	   				//do nothing
+	   			}
 	   	 		document.getElementById("allMusic").style.display="none";
 	   			document.getElementById("justArtists").style.display="none";
 	   			document.getElementById("justAlbums").style.display="none";
@@ -328,7 +339,6 @@ function artistList(){
 		<br />
 		<input type="text" id="txtSearch" placeholder="Search..."/>
 		<br />
-		<input type="button" id="btnSearch" value="Search" />
 		</div>
 <br /><br />
 <!-- This is the section that will be shown by default when the program is opened -->
@@ -365,10 +375,10 @@ function artistList(){
 	</div>
 	<!-- These radio buttons will pass values to the tblShow function, defining which table will be shown, 
 	which ones will be hidden, and which servlet will be used to search -->
-	<input type="radio" id="radAll" name = "radSearchBy" onclick="show(0)" checked> All Music<br>
-	<input type="radio" id="radSongs" name = "radSearchBy" onclick="show(1)"> Songs<br>
-    <input type="radio" id="radArtists" name = "radSearchBy" onclick="show(2)"> Artists<br>
-    <input type="radio" id="radAlbums" name = "radSearchBy" onclick="show(3)"> Albums
+	<input type="radio" id="radAll" name = "radSearchBy" onclick="show(0);" checked> All Music<br>
+	<input type="radio" id="radSongs" name = "radSearchBy" onclick="show(1);"> Songs<br>
+    <input type="radio" id="radArtists" name = "radSearchBy" onclick="show(2);"> Artists<br>
+    <input type="radio" id="radAlbums" name = "radSearchBy" onclick="show(3);"> Albums
 </div>
 </div>
 </body>
