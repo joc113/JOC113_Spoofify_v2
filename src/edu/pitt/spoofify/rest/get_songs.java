@@ -48,7 +48,7 @@ public class get_songs extends HttpServlet {
 		String searchTerm;
 		String sqlSongs = "";
 		JSONObject searchResults = new JSONObject();
-		final int RESULTS_LIMIT = 50;
+		final int RESULTS_LIMIT = 30;
 		
 		HttpSession session = request.getSession(true);
 		session.setAttribute("SEARCH_RESULTS", ""); // Let's assume this contains our data

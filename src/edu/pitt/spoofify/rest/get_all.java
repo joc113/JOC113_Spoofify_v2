@@ -48,7 +48,7 @@ public class get_all extends HttpServlet {
 		String searchTerm;								//Holds searchTerm
 		String sql = "";								//Holds MySQL query
 		JSONObject searchResults = new JSONObject();	//JSONObject to return results to be passed to user
-		final int RESULTS_LIMIT = 50;					//Limit amount of results user can get. I think 50 is fine
+		final int RESULTS_LIMIT = 30;					//Limit amount of results user can get. I think 50 is fine
 		
 		HttpSession session = request.getSession(true); 
 		session.setAttribute("SEARCH_RESULTS", "");		

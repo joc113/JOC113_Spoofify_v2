@@ -47,7 +47,7 @@ public class get_albums extends HttpServlet {
 		String searchTerm;								//Holds search term
 		String sql = "";								//Holds query
 		JSONObject searchResults = new JSONObject();	//JSONObject to return results
-		final int RESULTS_LIMIT = 50;					
+		final int RESULTS_LIMIT = 30;					
 		
 		HttpSession session = request.getSession(true);
 		session.setAttribute("SEARCH_RESULTS", ""); // Let's assume this contains our data
